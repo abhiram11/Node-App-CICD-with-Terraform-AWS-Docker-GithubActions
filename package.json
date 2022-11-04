@@ -1,0 +1,23 @@
+{
+  "name": "node-app-cicd-with-terraform-aws-docker-githubactions",
+  "version": "1.0.0",
+  "description": "We will build a sample app, build Docker Image out of it, provision AWS resources (EC2s, ECR, etc.) using Terraform, set up Github secrets and credentials necessary for CI/CD pipeline that we define in GitHub Actions.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abhiram11/Node-App-CICD-with-Terraform-AWS-Docker-GithubActions.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/abhiram11/Node-App-CICD-with-Terraform-AWS-Docker-GithubActions/issues"
+  },
+  "homepage": "https://github.com/abhiram11/Node-App-CICD-with-Terraform-AWS-Docker-GithubActions#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
