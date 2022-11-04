@@ -20,6 +20,7 @@ resource "aws_instance" "name" {
   instance_type          = "t2.micro"
   key_name               = aws_key_pair.deployer_key.key_name
   vpc_security_group_ids = [aws_security_group.secgroup.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2-iam-profile.name
   connection {
     type        = "ssh"
     host        = self.public_ip
@@ -30,6 +31,11 @@ resource "aws_instance" "name" {
   tags = {
     "name" = "DeployVM-Abhi"
   }
+}
+
+resource "aws_iam_instance_profile" "ec2-iam-profile" {
+  name = "ec2-iam-profile"
+  role = "EC2-ECR-ReadOnly"
 }
 
 resource "aws_security_group" "secgroup" {
