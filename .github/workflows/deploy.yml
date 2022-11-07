@@ -38,7 +38,7 @@ jobs:
           -var="key_name=deployer-key" \
           -out=PLAN
         working-directory: ./terraform
-      - name: Terraform Apply
+      - name: Terraform Apply and Refresh
         id: apply
         run: terraform apply PLAN
         working-directory: ./terraform
@@ -61,7 +61,7 @@ jobs:
       - name: Build and push Docker Image
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: abhi-node-app
+          REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
@@ -70,7 +70,7 @@ jobs:
       - name: Pull and Deploy Docker Image to EC2
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REPOSITORY: abhi-node-app
+          REPOSITORY: example-node-app
           IMAGE_TAG: ${{ github.sha }}
           AWS_DEFAULT_REGION: us-east-1
         uses: appleboy/ssh-action@master
