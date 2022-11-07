@@ -2,7 +2,7 @@ name: CI/CD Terraform on AWS
 on:
   push:
     branches:
-      - Node-App-CICD-with-Terraform-AWS-Docker-GithubActions
+      - 'main'
 
 env:
   AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
