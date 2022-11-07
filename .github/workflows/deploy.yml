@@ -40,7 +40,7 @@ jobs:
         working-directory: ./terraform
       - name: Terraform Apply and Refresh
         id: apply
-        run: terraform apply PLAN
+        run: terraform apply -refresh-only PLAN
         working-directory: ./terraform
       - name: Emit output IP
         id: set-ip
