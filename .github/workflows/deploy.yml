@@ -15,9 +15,11 @@ env:
 jobs:
   deploy-infra:
     runs-on: ubuntu-latest
+    outputs:
+      SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip}}
     steps:
       - name: Checkout V2
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v1
         with:
@@ -40,6 +42,48 @@ jobs:
         id: apply
         run: terraform apply PLAN
         working-directory: ./terraform
-
-
-
+      - name: Emit output IP
+        id: set-ip
+        run: |
+          echo "::set-output name=instance_public_ip::$(terraform output instance_public_ip)"
+  deploy-app:
+    runs-on: ubuntu-latest
+    needs: deploy-infra
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set IP Github env from deploy-infra to deploy-app AWS
+        run: echo SERVER_PUBLIC_IP=${{ needs.deploy-infra.outputs.SERVER_PUBLIC_IP }} >> $GITHUB_ENV
+      - name: Login to AWS ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+      - name: Build and push Docker Image
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: abhi-node-app
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+        working-directory: ./terraform
+      - name: Pull and Deploy Docker Image to EC2
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REPOSITORY: abhi-node-app
+          IMAGE_TAG: ${{ github.sha }}
+          AWS_DEFAULT_REGION: us-east-1
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.SERVER_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ env.PRIVATE_SSH_KEY }}
+          envs: PRIVATE_SSH_KEY, REGISTRY, REPOSITORY, IMAGE_TAG, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION, AWS_REGION
+          script: |
+            sudo apt update
+            sudo apt install docker.io -y
+            sudo apt install awscli -y
+            sudo $(aws ecr get-login --no-include-email --region us-east-1)
+            sudo docker stop abhiappcontainer || true
+            sudo docker rm abhiappcontainer || true
+            sudo docker pull $REGISTRY/$REPOSITORY:$IMAGE_TAG
+            sudo docker run -d --name abhiappcontainer -p 80:8080 $REGISTRY/$REPOSITORY:$IMAGE_TAG
