@@ -18,7 +18,7 @@ jobs:
     outputs:
       SERVER_PUBLIC_IP: ${{ steps.set-ip.outputs.instance_public_ip}}
     steps:
-      - name: Checkout V2
+      - name: Checkout V3
         uses: actions/checkout@v3
       - name: Setup terraform
         uses: hashicorp/setup-terraform@v1
@@ -65,7 +65,7 @@ jobs:
         run: |
           docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-        working-directory: ./terraform
+        working-directory: ../
       - name: Pull and Deploy Docker Image to EC2
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
